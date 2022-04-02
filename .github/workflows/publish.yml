@@ -1,0 +1,29 @@
+name: Publish
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        target: ['ubuntu-x64', 'win-x64']
+
+    runs-on: windows-latest
+    name: Build for ${{ matrix.target }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.101
+    - name: Install dependencies
+      run: dotnet restore
+    - name: Build ${{ matrix.target }}
+      run: dotnet publish AnswerMematron.csproj -r ${{ matrix.target }} -c Release --self-contained
+    - name: Artifact Upload ${{ matrix.target.runtime }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ matrix.target }}
+        path: ./bin/Release/net6.0/${{ matrix.target }}/publish/
